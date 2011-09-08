@@ -2,8 +2,7 @@ structure InternalLexer=
    struct
     structure UserDeclarations =
       struct
-datatype token = VAL | FUN | LPAREN | RPAREN 
-  | ID of string | EQ | NUM of int | PLUS | SEMI
+datatype token = VAL | FUN | LPAREN | RPAREN | ID | EQ | NUM | PLUS | SEMI
 type lexresult = (token * int) option
 
 fun eof() = NONE
@@ -177,8 +176,8 @@ let fun continue() = lex() in
 | 15 => (SOME(PLUS, yypos))
 | 17 => (SOME(SEMI, yypos))
 | 21 => (lex())
-| 24 => let val yytext=yymktext() in SOME(NUM (valOf (Int.fromString yytext)), yypos) end
-| 28 => let val yytext=yymktext() in SOME(ID yytext, yypos) end
+| 24 => (SOME(NUM, yypos))
+| 28 => (SOME(ID, yypos))
 | 3 => (SOME(VAL, yypos))
 | 7 => (SOME(FUN, yypos))
 | 9 => (SOME(LPAREN, yypos))

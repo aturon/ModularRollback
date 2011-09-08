@@ -20,12 +20,15 @@ struct
 	  fun get n = 
 	      case !sr 
 	       of NONE => ""
-		| SOME(s) => s
+		| SOME(s) => (sr := NONE; s)
       in InternalLexer.makeLexer get end
-end :
+end
+(* :
 sig
   type token
   val toks: token list
+  val tokToString: token -> string
+  val eq: (token * token) -> bool
   val make: string -> unit -> (token * int) option
 end
-
+*)
