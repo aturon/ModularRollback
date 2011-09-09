@@ -140,8 +140,8 @@ end;
  *
  * This code is copied directly from Figure 5 in the paper, almost verbatim.
  *)
-functor GreatEscape (structure E : ESCAPE
-                     type ans) : CONTROL =
+functor GE (structure E : ESCAPE
+            type ans) : CONTROL =
 struct
     open E
     exception MissingReset
@@ -244,10 +244,13 @@ end;
 structure NImpl = Naive(structure E = NonAborting type ans = string);
 
 (* The Great Escape, without proper space efficiency. *)
-structure GImpl1 = GreatEscape(structure E = NonAborting type ans = string);
+structure GImpl1 = GE(structure E = NonAborting type ans = string);
 
 (* The Great Escape with proper space efficiency. *)
-structure GImpl2 = GreatEscape(structure E = Aborting type ans = string);
+structure GImpl2 = GE(structure E = Aborting type ans = string);
 
 (* The Great Escape with an easier-to-understand implementation. *)
 structure GImpl3 = GreatEscape2(structure E = Aborting type ans = string);
+
+
+functor GreatEscape(type ans) = GE(structure E = Aborting type ans = ans)

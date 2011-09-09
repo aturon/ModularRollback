@@ -1,31 +1,41 @@
+functor BurkeFisher (P: PARSER) =
 struct
-  datatype    checkPt = CP of token -> result option reified
-       and 'a reified = WRITER of (checkPt list) -> 'a * checkPt list
+  open P (* we'll shadow result and parse *)
 
-  type checkPt = token -> result option
-  type 'a M = (checkPt list) -> 'a * checkPt list
+  (* instantiate Herman's pearl *)
+  structure C = GreatEscape(type ans = P.result)
 
-  fun unit x = fn cpts => (x, cpts)
-
-  (* this is doing monadic bind! *)
-  fun wrapLex lex strm = shift (fn k =>
-      fn cpts => k (lex strm) (CP k :: cpts))
+  type repair = token * span * token
+  datatype result
+    = REPAIR of repair
+    | RESULT of P.result
 
   fun tryToks cpt [] = NONE
     | tryToks cpt (tok::toks) = 
-        case cpt tok 
-	 of NONE        => tryToks cpt toks
-	  | SOME result => 
+      let val ((oldTok, span, strm'), k) = cpt
+      in k (tok, span, strm');
+	 SOME (oldTok, span, tok)	 
+      end
+      handle ParseError _ => tryToks cpt toks
 
-  fun tryCpts [] => Unrepairable
+  fun tryCpts [] = NONE
     | tryCpts (cpt::cpts) = 
-        case tryToks cpt P.toks
-	 of NONE        => tryCpts cpts
-	  | SOME repair => RepairableBy repair
+        case tryToks cpt exampleToks
+	 of NONE   => tryCpts cpts
+	  | repair => repair
 
-  fun parse lex =
-      case reset (fn () => unit (P.parse (wrapLex lex))) []
-       of (SOME r, _)  => Accepted r
-	| (NONE, cpts) => tryCpts cpts
+  fun parse lex strm = 
+      let val cpts = ref []
+	  fun push cpt = cpts := cpt :: !cpts
+	  fun cptLex strm = 
+	      let val lr = lex strm
+	      in C.shift (fn k => (push (lr, k); k lr))
+	      end
+      in RESULT (C.reset (fn () => P.parse cptLex strm))
+	 handle ParseError span => 
+		case tryCpts (!cpts)
+		 of SOME r => REPAIR r
+		  | NONE   => raise ParseError span
+      end
 
 end
