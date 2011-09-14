@@ -1,0 +1,18 @@
+Library
+  structure Lexer
+  structure Main
+is
+
+  $/basis.cm
+  $/smlnj-lib.cm
+  $/ml-lpt-lib.cm
+
+  Lexer.lex.sml
+  Lexer.sml
+  LEXER.sig
+  Parser.sml
+  PARSER.sig
+  Escape.sml
+  BurkeFisher.sml
+
+  Harness.sml
